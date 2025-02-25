@@ -1,0 +1,147 @@
+---
+title: "Lab 04 - Regular Expressions"
+author: "Gregorio Salcedo"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    df_print: paged
+    theme: cerulean
+    highlight: haddock
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+
+library( dplyr )
+library( pander )
+library(ggplot2)
+library( quanteda )
+library( quanteda.textmodels )
+library( quanteda.textstats )
+library( quanteda.textplots )
+URL <- "https://github.com/DS4PS/cpp-527-spr-2020/blob/master/labs/data/IRS-1023-EZ-MISSIONS.rds?raw=true"
+dat <- readRDS(gzcon(url( URL )))
+head( dat[ c("orgname","codedef01","mission") ] ) %>% pander()
+
+```
+
+### Part 1
+
+
+```{r}
+#Missions That Start with "To"
+sum(grepl("^to ", dat$mission, ignore.case = TRUE))
+grep("^to ", dat$mission, ignore.case = TRUE, value = TRUE) %>% head()
+
+```
+
+```{r}
+#Empty Mission Statements
+sum(grepl("^\\s*$", dat$mission))
+dat$mission[grepl("^\\s*$", dat$mission)] %>% head()
+
+```
+
+
+```{r}
+#Missions Containing $ Symbol
+sum(grepl("\\$", dat$mission))
+grep("\\$", dat$mission, value = TRUE) %>% head()
+
+```
+
+
+```{r}
+#Missions with Two or More Digit Numbers
+sum(grepl("\\d{2,}", dat$mission))
+grep("\\d{2,}", dat$mission, value = TRUE) %>% head()
+
+```
+
+
+
+```{r}
+#Missions with Trailing Spaces
+sum(grepl("\\s+$", dat$mission))
+dat$mission <- trimws(dat$mission)
+
+```
+
+
+### Part 2
+
+
+
+```{r}
+
+corp <- corpus(dat, text_field = "mission")
+
+dict <- dictionary(list(
+  "climatechange" = c("climate change"),
+  "socialjustice" = c("social justice"),
+  "healthcare" = c("health care"),
+  "fundraising" = c("fund raising"),
+  "mentalhealth" = c("mental health"),
+  "earlyeducation" = c("early education"),
+  "foodsecurity" = c("food security"),
+  "sustainableenergy" = c("sustainable energy"),
+  "cleanwater" = c("clean water"),
+  "humanrights" = c("human rights")
+))
+tokens_clean <- tokens(corp, what = "word", remove_punct = TRUE) %>% 
+                tokens_tolower() %>% 
+                tokens_remove(stopwords("english")) %>% 
+                tokens_lookup(dictionary = dict, exclusive = FALSE)
+dfm_mat <- dfm(tokens_clean)
+top_words <- topfeatures(dfm_mat, 10)
+print(top_words)
+
+
+
+```
+
+
+```{r}
+tokens_stemmed <- tokens_wordstem(tokens_clean)
+dfm_stemmed <- dfm(tokens_stemmed)
+top_stemmed_words <- topfeatures(dfm_stemmed, 10)
+print(top_stemmed_words)
+
+```
+
+
+```{r}
+textplot_wordcloud(dfm_mat, max_words = 100)
+
+```
+
+```{r}
+freq_df <- textstat_frequency(dfm_stemmed, n = 10)
+ggplot(freq_df, aes(x = reorder(feature, frequency), y = frequency)) +
+  geom_col() +
+  coord_flip() +
+  labs(title = "Top 10 Most Frequent Words in Mission Statements After Stemming",
+       x = "Words", y = "Frequency")
+
+```
+
+
+### Part 3
+
+
+```{r}
+black_community <- grepl("black|african american|minority|racial equity|diversity|civil rights|social justice|inclusion", 
+                         dat$mission, ignore.case = TRUE)
+d_black <- dat[black_community, c("orgname", "codedef01", "mission")]
+head(d_black, 10)
+
+```
+
+
+
+```{r}
+nrow(d_black)
+write.csv(d_black, "black_community_nonprofits.csv", row.names = FALSE)
+
+```

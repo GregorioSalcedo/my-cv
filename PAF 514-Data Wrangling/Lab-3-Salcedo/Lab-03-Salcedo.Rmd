@@ -1,0 +1,182 @@
+---
+title: "Lab 03 - Regular Expressions"
+author: "Gregorio Salcedo"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    df_print: paged
+    theme: cerulean
+    highlight: haddock
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+library(dplyr)
+library(stringr)
+library(knitr)
+library(pander)
+
+```
+
+### Preview Data
+
+
+```{r}
+URL <- "https://raw.githubusercontent.com/DS4PS/cpp-527-fall-2020/master/labs/data/medium-data-utf8-v2.csv"
+d <- read.csv( URL )
+
+preview.these <- c("title", "subtitle", "claps", "reading_time", "publication", "date")
+head( d[preview.these] ) %>% pander()
+```
+
+### Pre-Processing Steps
+
+
+
+```{r}
+# Remove extra spaces, HTML tags, and hair space dashes
+d$title <- gsub("\\s+", " ", d$title) 
+d$title <- gsub("<[^>]+>", "", d$title) 
+d$title <- gsub("\u200A—\u200A", "", d$title) 
+head(d$title)
+
+```
+### Performance Measure
+
+
+```{r}
+hist( d$claps, main="Raw Clap Count",
+      xlim=c(1,950), breaks=5000, col="gray20", border="white" )
+```
+
+
+
+```{r}
+hist( log10(d$clap+1), main="Logged Clap Score",
+      col="gray20", border="white", breaks=100 )
+```
+
+
+
+```{r}
+d$clap.score <- log10( d$claps + 1 )
+
+```
+### Q1
+
+Q1-A:What is the average performance (clap score) of each type of title?
+  How-to Guide        2.189      
+
+   Power List         2.166      
+
+    Question          2.043      
+
+     Other            2.039      
+
+  Colon Title         1.964  
+  
+Q1-B:Which style of title performs the best overall?
+How-to Guide	
+```{r}
+# Categorize titles 
+d$title_category <- case_when(
+  grepl("^[0-9]+\\s", d$title) ~ "Power List", 
+  grepl("^(How to|How we)", d$title, ignore.case = TRUE) ~ "How-to Guide",
+  grepl(":.*", d$title) ~ "Colon Title",  # Contains a colon
+  grepl("\\?$", d$title) | grepl("^(Why|What|How|Can)\\s", d$title, ignore.case = TRUE) ~ "Question",
+  TRUE ~ "Other"  
+)
+
+
+head(d[, c("title", "title_category")]) %>% pander()
+```
+
+
+```{r}
+# average clap score
+avg_clap_scores <- d %>%
+  group_by(title_category) %>%
+  summarise(avg_clap_score = mean(clap.score, na.rm = TRUE)) %>%
+  arrange(desc(avg_clap_score))
+
+avg_clap_scores %>% pander()
+
+```
+
+
+```{r}
+best_category <- avg_clap_scores %>% slice(1)
+best_category
+```
+### Q2
+
+Q2-A: What are the 25 most common words used in the titles?
+  to    the     a     how   of    and   your   in    for   you   is    with 
+   why   data   what    i    on    from   an    learning   can   are   my    be    &nbsp; 
+
+Q2-B: What is the most common word used at the beginning of a title?
+How
+Q2-C: What is the most common word used at the end of a title?
+Machine Learning
+
+```{r}
+#lowercase 
+d$title_clean <- tolower(d$title)
+
+#split titles
+word_list <- strsplit(d$title_clean, "\\s+")
+
+head (word_list)
+
+```
+
+
+```{r}
+#get all words in one vector 
+all_words <- unlist(word_list)
+
+# Remove punctuation
+all_words <- gsub("[[:punct:]]", "", all_words)
+
+# Count
+word_freq <- table(all_words)
+
+#top 25
+top_25_words <- sort(word_freq, decreasing = TRUE)[1:25]
+
+top_25_words %>% pander()
+
+```
+
+
+```{r}
+# extract first words
+first_words <- sapply(word_list, function(x) x[1])
+
+# count first word frequency
+first_word_freq <- table(first_words)
+
+# most common first word
+most_common_first <- names(sort(first_word_freq, decreasing = TRUE))[1]
+
+most_common_first
+```
+
+
+
+```{r}
+# Extract last words
+last_words <- sapply(word_list, function(x) x[length(x)])
+
+# Count last word frequency
+last_word_freq <- table(last_words)
+
+# most common last word
+most_common_last <- names(sort(last_word_freq, decreasing = TRUE))[1]
+
+most_common_last
+```
+
+
+

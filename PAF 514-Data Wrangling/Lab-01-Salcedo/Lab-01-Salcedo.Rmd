@@ -1,0 +1,224 @@
+---
+title: "Lab 01 - Monty Hall Problem Game"
+author: "Gregorio Salcedo"
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+output:
+  html_document:
+    df_print: paged
+    theme: cerulean
+    highlight: haddock
+    toc: yes
+    toc_float: yes
+---
+### STEP 1 - CREATE A NEW GAME
+This function sets up a new game.
+
+```{r}
+# step 1: create a vector of 3 doors: 2 goats and 1 car
+# step 2: randomize the position of the car for a new game
+# step 3: return the new game vector 
+
+# note that no external information is needed
+# so no arguments are passed to the vector 
+create_game <- function( )
+{
+    a.game <- sample( x=c("goat","goat","car"), size=3, replace=F )
+    return( a.game )
+} 
+
+# try three times to see randomization 
+create_game()  
+create_game() 
+create_game() 
+
+```
+
+### STEP 2 - CONTESTANT SELECTS A DOOR
+The contestant makes their first selection. Write a function to select one door at random.
+
+```{r}
+
+# step 1: create a vector of doors numbered 1,2,3
+# step 2: randomly select ONE of the doors 
+# step 3: return the selection 
+
+# since the contestant will not know the position 
+# of the car when they select a door we do not 
+# need to share information about the game set-up
+# before the selection is made 
+
+select_door <- function() {
+  sample(1:3, size = 1)
+}
+select_door()
+```
+
+### STEP 3 - HOST OPENS GOAT DOOR
+
+The host will always open a door with a goat behind it. But it can’t be a door the contestant has already selected. So it must be a door that is not a car and not a current contestant selection.
+```{r}
+
+
+# step 1:Identify doors with goats that the contestant has not selected.
+# step 2: Randomly pick one of these doors.
+# step 3: Return the door number.
+
+open_goat_door <- function(game, a.pick) {
+  doors <- setdiff(1:3, a.pick)
+  doors <- doors[game[doors] != "car"]
+  sample(doors, size = 1)
+}
+
+this_game <- create_game()
+my_pick <- select_door()
+open_goat_door(this_game, my_pick)
+```
+
+### STEP 4 - CHANGE DOORS
+The contestant is given the option to change from their initial selection to the other door that is still closed. The function will represent the game-playing strategy as the argument stay=TRUE or stay=FALSE.
+```{r}
+
+# If the strategy is "stay," keep the original.
+# If the strategy is "switch," choose the door that is not the original or the opened goat door.
+# Return the final pick.
+
+change_door <- function(stay = TRUE, opened.door, a.pick) {
+  if (stay) {
+    return(a.pick)
+  } else {
+    return(sample(setdiff(1:3, c(a.pick, opened.door)), size = 1))
+  }
+}
+
+
+opened_door <- open_goat_door(this_game, my_pick)
+change_door(stay = TRUE, opened_door, my_pick)
+change_door(stay = FALSE, opened_door, my_pick)
+
+```
+
+### STEP 5 - DETERMINE IF CONTENSTANT HAS WON
+
+```{r}
+
+# Check if the contestant’s final pick corresponds to the "car" in the game setup.
+# Return "WIN" or "LOSE."
+
+
+determine_winner <- function(final.pick, game) {
+  if (game[final.pick] == "car") {
+    return("WIN")
+  } else {
+    return("LOSE")
+  }
+}
+
+final_pick <- change_door(stay = FALSE, opened_door, my_pick)
+determine_winner(final_pick, this_game)
+
+```
+### TESTING THE GAME
+```{r, echo=F}
+# your game "recipe" 
+this.game <- create_game()
+my.initial.pick <- select_door()
+opened.goat.door <- open_goat_door( this.game, my.initial.pick )
+
+# save results for both strategies for the game
+my.final.pick.stay <- change_door( stay=T, 
+                                   opened.door=opened.goat.door, 
+                                   a.pick=my.initial.pick )
+my.final.pick.switch <- change_door( stay=F, 
+                                     opened.door=opened.goat.door, 
+                                     a.pick=my.initial.pick )
+
+# Compute outcomes
+game.outcome.stay <- determine_winner(final.pick = my.final.pick.stay, game = this.game)
+game.outcome.switch <- determine_winner(final.pick = my.final.pick.switch, game = this.game)
+
+
+# print game details and if you won
+
+# if you stayed:
+paste0( "GAME SETUP" )
+this.game
+paste0( "My initial selection: ", my.initial.pick )
+paste0( "The opened goat door: ", opened.goat.door )
+paste0( "My final selection: ", my.final.pick.stay )
+paste0( "GAME OUTCOME:" )
+determine_winner( final.pick=my.final.pick.stay, 
+                  game=this.game )
+
+# if you switched:
+paste0( "GAME SETUP" )
+this.game
+paste0( "My initial selection: ", my.initial.pick )
+paste0( "The opened goat door: ", opened.goat.door )
+paste0( "My final selection: ", my.final.pick.switch )
+paste0( "GAME OUTCOME:" )
+determine_winner( final.pick=my.final.pick.switch, 
+                  game=this.game )
+```
+
+### IF CONTESTANT STAYS
+
+Game Setup: **`r paste0( toupper(this.game), collapse=" " )`**  
+Initial selection: **`r my.initial.pick`**  
+The opened goat door: **`r opened.goat.door`**  
+Final door selection: **`r my.final.pick.stay`**
+Game outcome: **`r game.outcome.stay`**
+
+
+```{r, echo=F}
+this.game[ this.game == "car" ] <- "car "
+this.game <- toupper( this.game )
+
+first.pick <- c("        ","        ","        ")
+first.pick[ my.initial.pick ] <- "1st Pick"
+open.door <- c("        ","        ","        ")
+open.door[ opened.goat.door ] <- " Opened "
+final <- c("        ","        ","        ")
+final[ my.final.pick.stay ] <- " Final  " 
+
+win.lose <- final
+win.lose[ my.final.pick.stay ] <- paste0( "! ", game.outcome.stay, " !" )
+
+outcome <- paste0( rep( paste0( "! ", game.outcome.stay, " !" ), 5 ), collapse="" )
+  
+paste0( "  | ", this.game[1], " |     | ", this.game[2], " |     | ", this.game[3], " |  " )
+paste0( "  ", first.pick[1], "     ", first.pick[2], "     ", first.pick[3], "  " )
+paste0( "  ", open.door[1], "     ", open.door[2], "     ", open.door[3], "  " )
+paste0( "  ", final[1], "     ", final[2], "     ", final[3], "  " )
+paste0( "  ", win.lose[1], "     ", win.lose[2], "     ", win.lose[3], "  " )
+```
+
+### IF CONTESTANT SWITCHES
+
+Game Setup: **`r paste0( toupper(this.game), collapse=" " )`**  
+Initial selection: **`r my.initial.pick`**  
+The opened goat door: **`r opened.goat.door`**  
+Final door selection: **`r my.final.pick.switch`**  
+Game outcome: **`r game.outcome.switch`** 
+
+```{r, echo=F}
+
+this.game[ this.game == "car" ] <- "car "
+this.game <- toupper( this.game )
+first.pick <- c("        ","        ","        ")
+first.pick[ my.initial.pick ] <- "1st Pick"
+open.door <- c("        ","        ","        ")
+open.door[ opened.goat.door ] <- " Opened "
+final <- c("        ","        ","        ")
+final[ my.final.pick.switch ] <- " Final  " 
+outcome <- paste0( rep( paste0( " ", game.outcome.switch, "! " ), 5 ), collapse="" )
+
+win.lose <- final
+win.lose[ my.final.pick.switch ] <- paste0( "! ", game.outcome.switch, " !" )
+
+paste0( "  | ", this.game[1], " |     | ", this.game[2], " |     | ", this.game[3], " |  " )
+paste0( "  ", first.pick[1], "     ", first.pick[2], "     ", first.pick[3], "  " )
+paste0( "  ", open.door[1], "     ", open.door[2], "     ", open.door[3], "  " )
+paste0( "  ", final[1], "     ", final[2], "     ", final[3], "  " )
+paste0( "  ", win.lose[1], "     ", win.lose[2], "     ", win.lose[3], "  " )
+
+```

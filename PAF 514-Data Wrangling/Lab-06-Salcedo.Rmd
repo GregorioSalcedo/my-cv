@@ -1,0 +1,209 @@
+---
+title: 'Lab-06-Salcedo'
+output:
+  html_document:
+    theme: readable
+    df_print: paged
+    highlight: zenburn
+    toc: true
+---
+
+# Part 1
+
+Step 1-2:
+```{r}
+# vectors for each team member's information
+name <- c("Thibaut Jombart", "Dean Attali", "Anne Cori")
+img <- c(
+  "https://raw.githubusercontent.com/Watts-College/paf-514-template/main/labs/images/avatar-01.png",
+  "https://raw.githubusercontent.com/Watts-College/paf-514-template/main/labs/images/avatar-02.png",
+  "https://raw.githubusercontent.com/Watts-College/paf-514-template/main/labs/images/avatar-03.png"
+)
+desc <- c(
+  "Founder of RECON. Statistician and R programmer specialized in outbreaks.",
+  "Web and R developer, designer of the RECON website.",
+  "Epidemiologist and R developer working on disease transmission models."
+)
+website <- c(
+  "https://sites.google.com/site/thibautjombart/",
+  "http://deanattali.com/",
+  "https://www.imperial.ac.uk/people/a.cori"
+)
+github <- c(
+  "https://github.com/thibautjombart/",
+  "https://github.com/daattali/",
+  "https://github.com/acori"
+)
+twitter <- c(
+  "https://twitter.com/TeebzR",
+  "https://twitter.com/daattali",
+  ""
+)
+
+# data frame
+dat <- data.frame(NAME = name, IMG = img, DESC = desc, WEBSITE = website, 
+                  GITHUB = github, TWITTER = twitter, stringsAsFactors = FALSE)
+
+print(dat)
+
+```
+
+
+Step 3:
+```{r}
+# Load FontAwesome icons
+if (!require("fontawesome")) install.packages("fontawesome", repos="http://cran.us.r-project.org")
+library(fontawesome)
+
+# HTML profile section
+build_circle <- function(WEBSITE, IMG, NAME, DESC, GITHUB, TWITTER) {
+  
+  #FontAwesome icons
+  fa_home <- fontawesome::fa(name = "home")
+  fa_github <- fontawesome::fa(name = "github")
+  fa_twitter <- fontawesome::fa(name = "twitter")
+  
+  # profile container
+  cat('<div class="list-circles-item">\n')
+
+  # profile image 
+  cat(paste0('  <a href="', WEBSITE, '"><img src="', IMG, '" class="item-img"></a>\n'))
+
+  # name and description
+  cat(paste0('  <h4 class="item-name">', NAME, '</h4>\n'))
+  cat(paste0('  <div class="item-desc">', DESC, '</div>\n'))
+
+  # Links container
+  cat('  <div class="item-links">\n')
+
+  # Website link
+  if (WEBSITE != "") {
+    cat(paste0('    <a class="item-link" href="', WEBSITE, '" title="Website">', fa_home, '</a>\n'))
+  }
+
+  # GitHub link
+  if (GITHUB != "") {
+    cat(paste0('    <a class="item-link" href="', GITHUB, '" title="GitHub">', fa_github, '</a>\n'))
+  }
+
+  # Twitter link
+  if (TWITTER != "") {
+    cat(paste0('    <a class="item-link" href="', TWITTER, '" title="Twitter">', fa_twitter, '</a>\n'))
+  }
+
+  # Close tags
+  cat('  </div>\n')
+  cat('</div>\n')
+}
+
+
+```
+
+Step 4:
+
+```{r}
+# team member gallery
+cat('<div class="list-circles">\n')
+
+# Loop each row
+for (i in 1:nrow(dat)) {
+  build_circle(
+    WEBSITE = dat$WEBSITE[i],
+    IMG = dat$IMG[i],
+    NAME = dat$NAME[i],
+    DESC = dat$DESC[i],
+    GITHUB = dat$GITHUB[i],
+    TWITTER = dat$TWITTER[i]
+  )
+}
+
+cat('</div>\n')
+
+```
+
+Step 5:
+
+
+```{css}
+<style>
+
+/* --- align gallery --- */
+.list-circles {
+  text-align: center;
+}
+
+/* --- media query --- */
+@media only screen and (min-width: 1200px) {
+  .list-circles {
+    width: 150%;
+    margin-left: -25%;
+  }
+}
+
+/* --- individual profile items --- */
+.list-circles-item {
+  display: inline-block;
+  width: 240px;
+  vertical-align: top;
+  margin: 0;
+  padding: 20px;
+}
+
+/* ---  hover effect- selected items --- */
+.list-circles-item:hover {
+  background: #fafafa;
+}
+
+/* --- profile images --- */
+.list-circles-item .item-img {
+  max-width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  border: 1px solid #777;
+}
+
+/* --- name section --- */
+.list-circles-item .item-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* ---]description text --- */
+.list-circles-item .item-desc {
+  font-size: 16px;
+  font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+/* --- social media links --- */
+.list-circles-item .item-links {
+  margin-top: 10px;
+  padding-right: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ---links (GitHub, Twitter, Website) --- */
+.list-circles-item .item-link {
+  margin: 0 3px;
+  color: #314f96;
+  text-decoration: none !important;
+}
+
+/* --- ]hover effect- social media links --- */
+.list-circles-item .item-link:hover {
+  color: #042265;
+}
+
+/* --- SVG icons aligned  --- */
+.svg-icon {
+  display: inline-flex;
+  align-self: center;
+}
+
+</style>
+```
+
+
+
