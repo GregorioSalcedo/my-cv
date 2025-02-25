@@ -1,6 +1,6 @@
 ---
 title: "Gregorio Salcedo Resume"
-author:Gregorio Salcedo
+author: "Gregorio Salcedo"
 date: "`r Sys.Date()`"
 output:
   pagedown::html_resume:
