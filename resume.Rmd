@@ -55,10 +55,10 @@ Contact {#contact}
 
 
 - <i class="fa fa-envelope"></i> gs@lafilmingcompany.com
-- <i class="fa fa-twitter"></i> Oriocrumbs
-- <i class="fa fa-github"></i> github.com/gregoriosalcedo
-- <i class="fa fa-link"></i> [nickstrayer.me](http://Gregoriosalcedo.com/)
-- <i class="fa fa-phone"></i> (415) 712-0110
+- <i class="fa fa-twitter"></i> (@Oriocrumbs)
+- <i class="fa fa-github"></i> (http://github.com/gregoriosalcedo)
+- <i class="fa fa-link"></i> [GregorioSalcedo.com](http://Gregoriosalcedo.com/)
+- <i class="fa fa-phone"></i> (415) 712-xxxx
 
 
 
@@ -80,10 +80,10 @@ build_skill_bars(skills)
 
 
 
-Open Source Contributions {#open-source}
+Website {#open-source}
 --------------------------------------------------------------------------------
 
-All projects available at `https://gregoriosalcedo.com/`
+All projects available at `www.gregoriosalcedo.com`
 
 
 - `Design`: A look into my Design Portfolio
@@ -134,14 +134,14 @@ position_data %>% print_section('education')
 
 
 
-Selected Positions {data-icon=suitcase}
+Experience {data-icon=suitcase}
 --------------------------------------------------------------------------------
 
 ```{r}
 position_data %>% print_section('positions')
 ```
 
-Selected Writing {data-icon=newspaper}
+Projects {data-icon=newspaper}
 --------------------------------------------------------------------------------
 
 
